@@ -54,8 +54,7 @@ public class SCInsertStatementCreator {
         String proxyHost = "localhost";
         int proxyPort = 8888;
 
-        session = new SCSession(apiUrl, tenant, user, password, proxyHost,
-                proxyPort);
+        session = new SCSession(apiUrl, tenant, user, password, proxyHost, proxyPort);
 
         // TODO ファイル名をまた考える by shin
         String fileName = "INSERT.sql";
@@ -63,8 +62,7 @@ public class SCInsertStatementCreator {
         BufferedWriter bw = null;
         // ログイン
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(new File(fileName)), "UTF-8"));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(fileName)), "UTF-8"));
             session.login();
 
             // TODO メタ情報を取得してテーブル毎にPKを取得。
