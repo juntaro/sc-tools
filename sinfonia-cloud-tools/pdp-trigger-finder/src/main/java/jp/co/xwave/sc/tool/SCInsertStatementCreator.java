@@ -46,10 +46,11 @@ public class SCInsertStatementCreator {
     public void execute(String apiUrl, String tenant, String user, String password, String... tableNames) throws Exception {
 
         System.out.println("処理を開始しました。対象テーブル：" + Arrays.asList(tableNames));
-        String proxyHost = "localhost";
-        int proxyPort = 8888;
+        // TODO proxy無効化？
+        //        String proxyHost = "localhost";
+        //        int proxyPort = 8888;
 
-        session = new SCSession(apiUrl, tenant, user, password, proxyHost, proxyPort);
+        session = new SCSession(apiUrl, tenant, user, password);
 
         // TODO ファイル名をまた考える by shin
         String fileName = "INSERT.sql";
