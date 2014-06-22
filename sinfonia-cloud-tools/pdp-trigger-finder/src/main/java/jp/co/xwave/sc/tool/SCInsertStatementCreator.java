@@ -39,13 +39,7 @@ public class SCInsertStatementCreator {
             usage();
             System.exit(9);
         }
-        new SCInsertStatementCreator().execute(
-                args[0],
-                args[1],
-                args[2],
-                args[3],
-                Arrays.asList(args).subList(4, args.length)
-                        .toArray(new String[0]));
+        new SCInsertStatementCreator().execute(args[0], args[1], args[2], args[3], Arrays.asList(args).subList(4, args.length).toArray(new String[0]));
     }
 
     SCSession session;
@@ -84,27 +78,20 @@ public class SCInsertStatementCreator {
                 bw.write("#DELETE FROM " + tableName + ";\r\n");
                 // SQLを組み立てる
                 if (!resp.isError()) {
-                    for (Obj0 obj0 : resp.getBody().get_obj0List()
-                            .get_obj0List()) {
+                    for (Obj0 obj0 : resp.getBody().get_obj0List().get_obj0List()) {
                         // TODO この辺はSqlSelectResponseに移動する予定。
                         // カラム名のMapを組み立てる
                         int i = 1;
                         Map<Integer, String> columnNameMap = new LinkedHashMap<>();
-                        for (Column column : obj0.getColumnList()
-                                .getColumnList()) {
-                            columnNameMap.put(Integer.valueOf(i),
-                                    column.getColumnPhyName());
+                        for (Column column : obj0.getColumnList().getColumnList()) {
+                            columnNameMap.put(Integer.valueOf(i), column.getColumnPhyName());
                             i++;
                         }
                         for (Data data : obj0.getDataList().getDataList()) {
                             Map<String, Object> dataMap = new LinkedHashMap<>();
-                            for (Map.Entry<QName, Object> entry : data
-                                    .getAttributes().entrySet()) {
-                                Integer columnNo = Integer.valueOf(entry
-                                        .getKey().toString()
-                                        .replaceAll("column_", ""));
-                                dataMap.put(columnNameMap.get(columnNo),
-                                        entry.getValue());
+                            for (Map.Entry<QName, Object> entry : data.getAttributes().entrySet()) {
+                                Integer columnNo = Integer.valueOf(entry.getKey().toString().replaceAll("column_", ""));
+                                dataMap.put(columnNameMap.get(columnNo), entry.getValue());
                             }
                             // TODO メタ情報から取得したPKを使ってDELETE文を発行する
 
@@ -139,10 +126,8 @@ public class SCInsertStatementCreator {
      * Usage
      */
     private static void usage() {
-        System.out
-                .println("Usage: PDPTriggerFinder [apiURL] [tenantcode] [username] [password] [tableNames...]");
-        System.out
-                .println("ex) PDPTriggerFinder http://127.0.0.1/sinfoniacloud/api/ TEST user pass TBL1");
+        System.out.println("Usage: PDPTriggerFinder [apiURL] [tenantcode] [username] [password] [tableNames...]");
+        System.out.println("ex) PDPTriggerFinder http://127.0.0.1/sinfoniacloud/ TEST user pass TBL1");
     }
 
     /**
@@ -161,18 +146,12 @@ public class SCInsertStatementCreator {
      * @throws UnsupportedEncodingException
      * @throws JAXBException
      */
-    private SqlSelectResponse selectAll(String tableName)
-            throws UnsupportedEncodingException, JAXBException {
+    private SqlSelectResponse selectAll(String tableName) throws UnsupportedEncodingException, JAXBException {
         String responseXML = session
-                .sendRequestByPost(
-                        "DataAccessSequence.xml?_limitCount=100000",
-                        String.format(
-                                "<request><body><_obj0List><_obj0 lineNo=\"1\" value=\"select * from %s\" tableName=\"Table1\" /></_obj0List></body></request>",
-                                tableName), false);
+                .sendRequestByPost("DataAccessSequence.xml?_limitCount=100000",
+                        String.format("<request><body><_obj0List><_obj0 lineNo=\"1\" value=\"select * from %s\" tableName=\"Table1\" /></_obj0List></body></request>", tableName), false);
 
-        return XmlParser.convert(
-                new ByteArrayInputStream(responseXML.getBytes("UTF-8")),
-                SqlSelectResponse.class);
+        return XmlParser.convert(new ByteArrayInputStream(responseXML.getBytes("UTF-8")), SqlSelectResponse.class);
     }
 
     /**
@@ -181,14 +160,9 @@ public class SCInsertStatementCreator {
      * @throws JAXBException
      * @throws UnsupportedEncodingException
      */
-    private GetMetaDomainClassFindResponse getMetaDomainClass()
-            throws UnsupportedEncodingException, JAXBException {
+    private GetMetaDomainClassFindResponse getMetaDomainClass() throws UnsupportedEncodingException, JAXBException {
         String responseXML = session
-                .sendRequestByGet(
-                        "MetaInformation.getMetaDomainClassFind.xml?stereotype=DomainClass",
-                        true);
-        return XmlParser.convert(
-                new ByteArrayInputStream(responseXML.getBytes("UTF-8")),
-                GetMetaDomainClassFindResponse.class);
+                .sendRequestByGet("MetaInformation.getMetaDomainClassFind.xml?stereotype=DomainClass", true);
+        return XmlParser.convert(new ByteArrayInputStream(responseXML.getBytes("UTF-8")), GetMetaDomainClassFindResponse.class);
     }
 }
