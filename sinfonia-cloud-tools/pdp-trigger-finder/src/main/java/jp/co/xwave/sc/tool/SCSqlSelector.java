@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  * @author hirai
- *
+ * TODO そのうちこっちに処理を移す予定。
  */
 public class SCSqlSelector {
 

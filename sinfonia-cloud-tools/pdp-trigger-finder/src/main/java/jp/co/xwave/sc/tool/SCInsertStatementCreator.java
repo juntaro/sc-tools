@@ -62,6 +62,8 @@ public class SCInsertStatementCreator {
             bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(fileName)), "UTF-8"));
             session.login();
 
+            // TODO メタ情報を取得してテーブル毎にPKを取得。
+
             for (String tableName : tableNames) {
                 // TODO データを探すSQLを投げる
                 responseXML = session
@@ -70,12 +72,11 @@ public class SCInsertStatementCreator {
                                 String.format(
                                         "<request><body><_obj0List><_obj0 lineNo=\"1\" value=\"select * from %s\" tableName=\"Table1\" /></_obj0List></body></request>",
                                         tableName));
-                //System.out.println("レスポンスXML：" + responseXML);
 
                 Response resp = XmlParser.convert(new ByteArrayInputStream(
                         responseXML.getBytes("UTF-8")));
 
-                // System.out.println(resp);
+                // TODO 全件削除はなしにする予定。DELETE文投げるだけでよいので。
                 bw.write("#DELETE FROM " + tableName + ";\r\n");
                 // SQLを組み立てる
                 if (!resp.isError()) {
@@ -100,6 +101,8 @@ public class SCInsertStatementCreator {
                                 dataMap.put(columnNameMap.get(columnNo),
                                         entry.getValue());
                             }
+                            // TODO メタ情報から取得したPKを使ってDELETE文を発行する
+
                             StringBuilder buf = new StringBuilder();
                             buf.append("#INSERT INTO ");
                             buf.append(tableName);
@@ -111,7 +114,6 @@ public class SCInsertStatementCreator {
                                     .iterator(), "','"));
                             buf.append("');\r\n");
 
-                            // System.out.println(buf.toString());
                             bw.write(buf.toString());
                         }
                     }

@@ -22,7 +22,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * @author hirai
- *
+ * TODO レスポンスの型クラスはAPI毎に作る予定。ひょっとしたらリクエストも。
  */
 public class XmlParser {
 
