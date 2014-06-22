@@ -10,10 +10,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
+import jp.co.xwave.sc.tool.entity.GetMetaDomainClassAttributeFindResponse;
 import jp.co.xwave.sc.tool.entity.GetMetaDomainClassFindResponse;
 import jp.co.xwave.sc.tool.entity.SqlSelectResponse;
 
@@ -60,27 +62,23 @@ public class SCInsertStatementCreator {
 
             // TODO メタ情報を取得してテーブル毎にPKを取得。
             GetMetaDomainClassFindResponse domain = getMetaDomainClass();
-            System.out.println(domain);
+            GetMetaDomainClassAttributeFindResponse attribute = getMetaDomainClassAttribute();
 
             for (String tableName : tableNames) {
+                String classPhysicalName = domain.getClassPhysicalName(tableName);
+                Collection<String> primaryKeys = attribute.getTablePrimaryKeys(classPhysicalName);
+
                 SqlSelectResponse resp = selectAll(tableName);
 
-                // TODO 全件削除はなしにする予定。DELETE文投げるだけでよいので。
-                bw.write("#DELETE FROM " + tableName + ";\r\n");
+                // 全件削除はなしにする予定。
+                // bw.write("#DELETE FROM " + tableName + ";\r\n");
                 // SQLを組み立てる
-                if (!resp.isError()) {
-                    for (Map<String, Object> dataMap : resp.getTableDataList()) {
-                        // TODO メタ情報から取得したPKを使ってDELETE文を発行する
-                        StringBuilder buf = new StringBuilder();
-                        buf.append("#INSERT INTO ");
-                        buf.append(tableName);
-                        buf.append(" (");
-                        buf.append(StringUtils.join(dataMap.keySet().iterator(), ","));
-                        buf.append(") VALUES ('");
-                        buf.append(StringUtils.join(dataMap.values().iterator(), "','"));
-                        buf.append("');\r\n");
-                        bw.write(buf.toString());
-                    }
+                for (Map<String, Object> dataMap : resp.getTableDataList()) {
+                    // メタ情報から取得したPKを使ってDELETE文を発行する
+                    bw.write(createDeleteStatement(tableName, primaryKeys, dataMap));
+                    // INSERT文を発行する
+                    bw.write(createInsertStatement(tableName, dataMap));
+
                 }
                 bw.write("#COMMIT;\r\n");
             }
@@ -136,5 +134,67 @@ public class SCInsertStatementCreator {
         String responseXML = session
                 .sendRequestByGet("MetaInformation.getMetaDomainClassFind.xml?stereotype=DomainClass", true);
         return XmlParser.convert(new ByteArrayInputStream(responseXML.getBytes("UTF-8")), GetMetaDomainClassFindResponse.class);
+    }
+
+    /**
+     *
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws JAXBException
+     */
+    private GetMetaDomainClassAttributeFindResponse getMetaDomainClassAttribute() throws UnsupportedEncodingException, JAXBException {
+        String responseXML = session
+                .sendRequestByGet("DomainAttributeUtility.getMetaDomainClassAttributeFind.xml?stereotype=DomainClass", true);
+        return XmlParser.convert(new ByteArrayInputStream(responseXML.getBytes("UTF-8")), GetMetaDomainClassAttributeFindResponse.class);
+    }
+
+    /**
+     *
+     * @param tableName
+     * @param primaryKeys
+     * @param dataMap
+     * @return
+     */
+    private String createDeleteStatement(String tableName, Collection<String> primaryKeys, Map<String, Object> dataMap) {
+        StringBuilder buf = new StringBuilder();
+        buf.append("#DELETE FROM ");
+        buf.append(tableName);
+        buf.append(" WHERE ");
+        boolean isFirst = true;
+        for (String primaryKey : primaryKeys) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                buf.append(" AND ");
+            }
+            buf.append(primaryKey);
+            buf.append(" = '");
+            buf.append(dataMap.get(primaryKey.toLowerCase())); //TODO カラムのメタ情報から取れる名前が全部小文字なので。
+            buf.append("'");
+        }
+        // システムテナントコードが必ずPKに入る。
+        buf.append(" AND sys_tenantcode = '");
+        buf.append(dataMap.get("sys_tenantcode"));
+        buf.append("'");
+        buf.append(";\r\n");
+        return buf.toString();
+    }
+
+    /**
+     *
+     * @param tableName
+     * @param dataMap
+     * @return
+     */
+    private String createInsertStatement(String tableName, Map<String, Object> dataMap) {
+        StringBuilder buf = new StringBuilder();
+        buf.append("#INSERT INTO ");
+        buf.append(tableName);
+        buf.append(" (");
+        buf.append(StringUtils.join(dataMap.keySet().iterator(), ","));
+        buf.append(") VALUES ('");
+        buf.append(StringUtils.join(dataMap.values().iterator(), "','"));
+        buf.append("');\r\n");
+        return buf.toString();
     }
 }

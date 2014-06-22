@@ -56,6 +56,23 @@ public class GetMetaDomainClassFindResponse extends ToStringObject {
 
     /**
      *
+     * @param dbTableName
+     * @return
+     */
+    public String getClassPhysicalName(String dbTableName) {
+        if (isError) {
+            throw new RuntimeException("GetMetaDomainClassFind is ERROR.");
+        }
+        for (MetaDomainClass clazz : getBody().getObj0List().getMetaDomainClasses()) {
+            if (clazz.getDbTableName().equals(dbTableName)) {
+                return clazz.getClassPhysicalName();
+            }
+        }
+        throw new RuntimeException(String.format("dbTableName %s is not exists.", dbTableName));
+    }
+
+    /**
+     *
      * @author hirai
      */
     public static class Body extends ToStringObject {
@@ -907,7 +924,6 @@ public class GetMetaDomainClassFindResponse extends ToStringObject {
         public void setCreateTimestampMap(TimestampMap createTimestampMap) {
             this.createTimestampMap = createTimestampMap;
         }
-
 
     }
 }
