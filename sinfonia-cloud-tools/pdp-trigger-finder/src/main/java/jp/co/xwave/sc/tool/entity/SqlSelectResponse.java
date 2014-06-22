@@ -4,6 +4,8 @@
 package jp.co.xwave.sc.tool.entity;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +60,34 @@ public class SqlSelectResponse extends ToStringObject {
      */
     public void setBody(Body body) {
         this.body = body;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public Collection<Map<String, Object>> getTableDataList() {
+        Collection<Map<String, Object>> dataList = new ArrayList<>();
+        if (!isError()) {
+            for (Obj0 obj0 : getBody().get_obj0List().get_obj0List()) {
+                // カラム名のMapを組み立てる
+                int i = 1;
+                Map<Integer, String> columnNameMap = new LinkedHashMap<>();
+                for (Column column : obj0.getColumnList().getColumnList()) {
+                    columnNameMap.put(Integer.valueOf(i), column.getColumnPhyName());
+                    i++;
+                }
+                for (Data data : obj0.getDataList().getDataList()) {
+                    Map<String, Object> dataMap = new LinkedHashMap<>();
+                    for (Map.Entry<QName, Object> entry : data.getAttributes().entrySet()) {
+                        Integer columnNo = Integer.valueOf(entry.getKey().toString().replaceAll("column_", ""));
+                        dataMap.put(columnNameMap.get(columnNo), entry.getValue());
+                    }
+                    dataList.add(dataMap);
+                }
+            }
+        }
+        return dataList;
     }
 
     /**

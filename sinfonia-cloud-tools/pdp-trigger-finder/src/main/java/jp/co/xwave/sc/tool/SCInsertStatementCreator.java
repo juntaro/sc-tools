@@ -10,17 +10,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
 
 import jp.co.xwave.sc.tool.entity.GetMetaDomainClassFindResponse;
 import jp.co.xwave.sc.tool.entity.SqlSelectResponse;
-import jp.co.xwave.sc.tool.entity.SqlSelectResponse.Column;
-import jp.co.xwave.sc.tool.entity.SqlSelectResponse.Data;
-import jp.co.xwave.sc.tool.entity.SqlSelectResponse.Obj0;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -34,8 +29,7 @@ public class SCInsertStatementCreator {
      * @param args
      */
     public static void main(String[] args) throws Exception {
-        if (args.length < 5 || isEmpty(args[0]) || isEmpty(args[1])
-                || isEmpty(args[2]) || isEmpty(args[3]) || isEmpty(args[4])) {
+        if (args.length < 5 || isEmpty(args[0]) || isEmpty(args[1]) || isEmpty(args[2]) || isEmpty(args[3]) || isEmpty(args[4])) {
             usage();
             System.exit(9);
         }
@@ -47,8 +41,7 @@ public class SCInsertStatementCreator {
     /**
      * @param args
      */
-    public void execute(String apiUrl, String tenant, String user,
-            String password, String... tableNames) throws Exception {
+    public void execute(String apiUrl, String tenant, String user, String password, String... tableNames) throws Exception {
 
         System.out.println("処理を開始しました。対象テーブル：" + Arrays.asList(tableNames));
         String proxyHost = "localhost";
@@ -76,36 +69,17 @@ public class SCInsertStatementCreator {
                 bw.write("#DELETE FROM " + tableName + ";\r\n");
                 // SQLを組み立てる
                 if (!resp.isError()) {
-                    for (Obj0 obj0 : resp.getBody().get_obj0List().get_obj0List()) {
-                        // TODO この辺はSqlSelectResponseに移動する予定。
-                        // カラム名のMapを組み立てる
-                        int i = 1;
-                        Map<Integer, String> columnNameMap = new LinkedHashMap<>();
-                        for (Column column : obj0.getColumnList().getColumnList()) {
-                            columnNameMap.put(Integer.valueOf(i), column.getColumnPhyName());
-                            i++;
-                        }
-                        for (Data data : obj0.getDataList().getDataList()) {
-                            Map<String, Object> dataMap = new LinkedHashMap<>();
-                            for (Map.Entry<QName, Object> entry : data.getAttributes().entrySet()) {
-                                Integer columnNo = Integer.valueOf(entry.getKey().toString().replaceAll("column_", ""));
-                                dataMap.put(columnNameMap.get(columnNo), entry.getValue());
-                            }
-                            // TODO メタ情報から取得したPKを使ってDELETE文を発行する
-
-                            StringBuilder buf = new StringBuilder();
-                            buf.append("#INSERT INTO ");
-                            buf.append(tableName);
-                            buf.append(" (");
-                            buf.append(StringUtils.join(dataMap.keySet()
-                                    .iterator(), ","));
-                            buf.append(") VALUES ('");
-                            buf.append(StringUtils.join(dataMap.values()
-                                    .iterator(), "','"));
-                            buf.append("');\r\n");
-
-                            bw.write(buf.toString());
-                        }
+                    for (Map<String, Object> dataMap : resp.getTableDataList()) {
+                        // TODO メタ情報から取得したPKを使ってDELETE文を発行する
+                        StringBuilder buf = new StringBuilder();
+                        buf.append("#INSERT INTO ");
+                        buf.append(tableName);
+                        buf.append(" (");
+                        buf.append(StringUtils.join(dataMap.keySet().iterator(), ","));
+                        buf.append(") VALUES ('");
+                        buf.append(StringUtils.join(dataMap.values().iterator(), "','"));
+                        buf.append("');\r\n");
+                        bw.write(buf.toString());
                     }
                 }
                 bw.write("#COMMIT;\r\n");
