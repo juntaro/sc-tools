@@ -19,6 +19,11 @@ import jp.co.xwave.sc.tool.entity.GetMetaDomainClassAttributeFindResponse;
 import jp.co.xwave.sc.tool.entity.GetMetaDomainClassFindResponse;
 import jp.co.xwave.sc.tool.entity.SqlSelectResponse;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -31,6 +36,25 @@ public class SCInsertStatementCreator {
      * @param args
      */
     public static void main(String[] args) throws Exception {
+        // 引数を解析する
+        Options options = new Options();
+        options.addOption("p", false, "properties file path");
+        CommandLineParser parser = new BasicParser();
+        CommandLine commandLine;
+        try {
+            commandLine = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.err.println("引数が解析できませんでした");
+            return;
+        }
+
+        if (commandLine.hasOption("p")) {
+
+        } else {
+            System.err.println("");
+            return;
+        }
+
         if (args.length < 5 || isEmpty(args[0]) || isEmpty(args[1]) || isEmpty(args[2]) || isEmpty(args[3]) || isEmpty(args[4])) {
             usage();
             System.exit(9);
