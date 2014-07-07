@@ -15,10 +15,17 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
+import jp.co.xwave.sc.tool.config.ScConfig;
+import jp.co.xwave.sc.tool.config.ScConfigFactory;
 import jp.co.xwave.sc.tool.entity.GetMetaDomainClassAttributeFindResponse;
 import jp.co.xwave.sc.tool.entity.GetMetaDomainClassFindResponse;
 import jp.co.xwave.sc.tool.entity.SqlSelectResponse;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -28,29 +35,65 @@ import org.apache.commons.lang.StringUtils;
 public class SCInsertStatementCreator {
 
     /**
-     * @param args
+     *
      */
-    public static void main(String[] args) throws Exception {
-        if (args.length < 5 || isEmpty(args[0]) || isEmpty(args[1]) || isEmpty(args[2]) || isEmpty(args[3]) || isEmpty(args[4])) {
-            usage();
-            System.exit(9);
-        }
-        new SCInsertStatementCreator().execute(args[0], args[1], args[2], args[3], Arrays.asList(args).subList(4, args.length).toArray(new String[0]));
-    }
+    static Options options;
 
-    SCSession session;
+    static {
+        options = new Options();
+        @SuppressWarnings("static-access")
+        Option configfile = OptionBuilder.withArgName("config")
+                .isRequired()
+                .hasArg()
+                .withDescription("configuration file")
+                .create("config");
+        options.addOption(configfile);
+    }
 
     /**
      * @param args
      */
-    public void execute(String apiUrl, String tenant, String user, String password, String... tableNames) throws Exception {
+    public static void main(String[] args) throws Exception {
+        CommandLine cmd = new PosixParser().parse(options, args);
+        String configPath = cmd.getOptionValue("config");
+        String[] tables = cmd.getArgs();
 
+        if (!new File(configPath).exists()) {
+            System.out.println(String.format("%s is not exists.", configPath));
+            System.exit(9);
+        }
+        ScConfig config = ScConfigFactory.create(configPath);
+        new SCInsertStatementCreator().execute(config, tables);
+    }
+
+    ScConfig config;
+
+    SCSession session;
+
+    SCSession paasSession;
+
+    /**
+     * @param args
+     */
+    public void execute(ScConfig config, String... tableNames) throws Exception {
         System.out.println("処理を開始しました。対象テーブル：" + Arrays.asList(tableNames));
-        // TODO proxy無効化？
-        //        String proxyHost = "localhost";
-        //        int proxyPort = 8888;
 
-        session = new SCSession(apiUrl, tenant, user, password);
+        if (isEmpty(config.getProxyHost())) {
+            session = new SCSession(config.getTargetServer().getUrl(), config.getTenantCode(), config.getTargetServer().getUser(), config.getTargetServer().getPassword());
+            if (config.getPaasServer() != null) {
+                paasSession = new SCSession(config.getPaasServer().getUrl(), config.getTenantCode(), config.getPaasServer().getUser(), config.getPaasServer().getPassword());
+                ;
+            }
+        } else {
+            session = new SCSession(config.getTargetServer().getUrl(), config.getTenantCode(),
+                    config.getTargetServer().getUser(), config.getTargetServer().getPassword(),
+                    config.getProxyHost(), config.getProxyPort());
+            if (config.getPaasServer() != null) {
+                paasSession = new SCSession(config.getPaasServer().getUrl(), config.getTenantCode(),
+                        config.getPaasServer().getUser(), config.getPaasServer().getPassword(),
+                        config.getProxyHost(), config.getProxyPort());
+            }
+        }
 
         // TODO ファイル名をまた考える by shin
         String fileName = "INSERT.sql";
@@ -60,6 +103,9 @@ public class SCInsertStatementCreator {
         try {
             bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(fileName)), "UTF-8"));
             session.login();
+            if (paasSession != null) {
+                paasSession.login();
+            }
 
             // TODO メタ情報を取得してテーブル毎にPKを取得。
             GetMetaDomainClassFindResponse domain = getMetaDomainClass();
@@ -89,16 +135,11 @@ public class SCInsertStatementCreator {
             }
             // ログアウト
             session.logout();
+            if (paasSession != null) {
+                paasSession.logout();
+            }
         }
         System.out.println("処理を終了しました。");
-    }
-
-    /**
-     * Usage
-     */
-    private static void usage() {
-        System.out.println("Usage: PDPTriggerFinder [apiURL] [tenantcode] [username] [password] [tableNames...]");
-        System.out.println("ex) PDPTriggerFinder http://127.0.0.1/sinfoniacloud/ TEST user pass TBL1");
     }
 
     /**
@@ -132,7 +173,8 @@ public class SCInsertStatementCreator {
      * @throws UnsupportedEncodingException
      */
     private GetMetaDomainClassFindResponse getMetaDomainClass() throws UnsupportedEncodingException, JAXBException {
-        String responseXML = session
+        SCSession metaSession = paasSession == null ? session : paasSession;
+        String responseXML = metaSession
                 .sendRequestByGet("MetaInformation.getMetaDomainClassFind.xml?stereotype=DomainClass", true);
         return XmlParser.convert(new ByteArrayInputStream(responseXML.getBytes("UTF-8")), GetMetaDomainClassFindResponse.class);
     }
@@ -144,7 +186,8 @@ public class SCInsertStatementCreator {
      * @throws JAXBException
      */
     private GetMetaDomainClassAttributeFindResponse getMetaDomainClassAttribute() throws UnsupportedEncodingException, JAXBException {
-        String responseXML = session
+        SCSession metaSession = paasSession == null ? session : paasSession;
+        String responseXML = metaSession
                 .sendRequestByGet("DomainAttributeUtility.getMetaDomainClassAttributeFind.xml?stereotype=DomainClass", true);
         return XmlParser.convert(new ByteArrayInputStream(responseXML.getBytes("UTF-8")), GetMetaDomainClassAttributeFindResponse.class);
     }
