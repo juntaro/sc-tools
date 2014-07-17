@@ -6,5 +6,7 @@
   <packaging>pom</packaging>
   <modules>
   	<module>pdp-trigger-finder</module>
+  	<module>sinfonia-cloud-tools-common</module>
+  	<module>sinfonia-cloud-tools-commands</module>
   </modules>
 </project>

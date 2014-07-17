@@ -10,7 +10,6 @@ import javax.xml.bind.JAXBException;
 
 /**
  * @author hirai
- * TODO レスポンスの型クラスはAPI毎に作る予定。ひょっとしたらリクエストも。
  */
 public class XmlParser {
 
