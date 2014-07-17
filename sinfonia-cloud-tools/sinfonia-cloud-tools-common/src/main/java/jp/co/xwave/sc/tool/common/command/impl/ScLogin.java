@@ -3,8 +3,6 @@
  */
 package jp.co.xwave.sc.tool.common.command.impl;
 
-import javax.xml.bind.JAXBException;
-
 import jp.co.xwave.sc.tool.common.SCSession;
 import jp.co.xwave.sc.tool.common.XmlParser;
 import jp.co.xwave.sc.tool.common.command.ScCommand;
@@ -12,22 +10,25 @@ import jp.co.xwave.sc.tool.common.iface.LoginRequest;
 import jp.co.xwave.sc.tool.common.iface.LoginResponse;
 
 /**
+ * SCログイン.
+ * 
  * @author hirai
- *
  */
 public class ScLogin implements ScCommand<LoginRequest, LoginResponse> {
 
-    /* (非 Javadoc)
-     * @see jp.co.xwave.sc.tool.common.command.ScCommand#execute(jp.co.xwave.sc.tool.common.SCSession, java.lang.Object)
+    /**
+     * {@inheritDoc}
+     * <dl>
+     * <dt>事前条件
+     * <dd>SCSessionにログインする環境の接続情報が設定されていること（URL、テナント、ユーザー、パスワード）
+     * <dt>事後条件
+     * <dd>SCの認証サービスの呼び出しを行い、結果を返却する
+     * </dl>
      */
     @Override
     public LoginResponse execute(SCSession session, LoginRequest req) {
-        try {
-            String response = session.sendRequestByPost("Login.xml", XmlParser.convert(req, LoginRequest.class));
-            return XmlParser.convert(response, LoginResponse.class);
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
-        }
+        String response = session.callApiByPost("Login.xml", XmlParser.convert(req, LoginRequest.class));
+        return XmlParser.convert(response, LoginResponse.class);
     }
 
 }

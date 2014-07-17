@@ -11,15 +11,44 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
 /**
+ * SC設定のファクトリ
+ * 
  * @author hirai
- *
  */
 public class ScConfigFactory {
 
     /**
-     *
-     * @param path
-     * @return
+     * 指定されたファイルパスからSC設定を生成する
+     * <dl>
+     * <dt>事前条件
+     * <dd>正しいフォーマットの設定ファイルのパスが指定されていること
+     * <dt>事後条件
+     * <dd>設定ファイルの内容で{@link ScConfig}が生成される
+     * </dl>
+     * 設定ファイルに設定可能な項目は以下のとおり
+     * <dl>
+     * <dt>tenantcode
+     * <dd>テナントコード
+     * <dt>target.url
+     * <dd>対象サーバのURL <code>http://localhost/sinfoniacloud</code>
+     * <dt>target.user
+     * <dd>対象サーバにログインするためのユーザID
+     * <dt>target.password
+     * <dd>対象サーバにログインするためのパスワード
+     * <dt>paas.url
+     * <dd>メタ情報を取得するためのPAAS環境のURL(対象サーバがPAAS環境の場合は不要)
+     * <dt>paas.user
+     * <dd>PAAS環境にログインするためのユーザID
+     * <dt>paas.password
+     * <dd>PAAS環境にログインするためのパスワード
+     * <dt>proxy.host
+     * <dd>プロキシサーバのホスト
+     * <dt>proxy.port
+     * <dd>プロキシサーバのポート
+     * </dl>
+     * 
+     * @param path 設定ファイルパス
+     * @return {@link ScConfig}
      */
     public static ScConfig create(String path) {
         try {

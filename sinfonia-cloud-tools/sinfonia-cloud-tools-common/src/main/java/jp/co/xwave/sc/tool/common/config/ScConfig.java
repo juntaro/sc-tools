@@ -4,7 +4,9 @@
 package jp.co.xwave.sc.tool.common.config;
 
 /**
- *
+ * SCの接続情報を保持する
+ * 
+ * @auther hirai
  */
 public class ScConfig {
 
@@ -94,7 +96,7 @@ public class ScConfig {
     }
 
     /**
-     * サーバー設定
+     * サーバー接続設定
      */
     public static class ScServerConfig {
 

@@ -17,7 +17,7 @@ public class ScQuickTestDeploy implements ScCommand<Void, Void> {
      */
     @Override
     public Void execute(SCSession session, Void req) {
-        session.sendRequestByGet("QuickTestView.json");
+        session.callApiByGet("QuickTestView.json");
         return null;
     }
 }
