@@ -6,4 +6,32 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>sinfonia-cloud-tools-cui-common</artifactId>
+  
+      <dependencies>
+        <dependency>
+            <groupId>jp.co.xwave</groupId>
+            <artifactId>sinfonia-cloud-tools-commands</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
