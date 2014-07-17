@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>jp.co.xwave</groupId>
-  <artifactId>sinfonia-cloud-tools</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <parent>
+    <groupId>jp.co.xwave</groupId>
+    <artifactId>sinfonia-cloud-tools-ui</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>sinfonia-cloud-tools-cui</artifactId>
   <packaging>pom</packaging>
   <modules>
-  	<module>pdp-trigger-finder</module>
-  	<module>sinfonia-cloud-tools-common</module>
-  	<module>sinfonia-cloud-tools-commands</module>
-  	<module>sinfonia-cloud-tools-ui</module>
+  	<module>sinfonia-cloud-tools-cui-common</module>
   </modules>
 </project>
